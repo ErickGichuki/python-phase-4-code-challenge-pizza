@@ -37,8 +37,7 @@ def restaurants_by_id(id):
         rests = Restaurant.query.filter(Restaurant.id==id).first()
         if not rests:
             return make_response(jsonify({'error':'Restaurant not found'}), 404)
-        restaurants = [rests.to_dict()]
-        return make_response(jsonify(restaurants), 200)
+        return make_response(jsonify(rests.to_dict()), 200)
     
     elif request.method == 'DELETE':
         restsdel = Restaurant.query.filter(Restaurant.id==id).first()
@@ -55,7 +54,7 @@ def get_pizzas():
     pizzas_list = [pizza.to_dict() for pizza in pizzas]
     return make_response(jsonify(pizzas_list), 200)
 
-@app.route('/respizzas', methods=['POST'])
+@app.route('/restaurant_pizzas', methods=['POST'])
 def postpizzas():
     data = request.get_json()
     try:
@@ -64,7 +63,7 @@ def postpizzas():
             pizza_id= data['pizza_id'], 
             restaurant_id=data['restaurant_id'],
             )
-        
+
         db.session.add(new_data)
         db.session.commit()
 
