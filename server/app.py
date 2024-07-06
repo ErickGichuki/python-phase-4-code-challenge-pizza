@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from models import db, Restaurant, RestaurantPizza, Pizza
 from flask_migrate import Migrate
-from flask import Flask, request, make_response, jsonify, abort
+from flask import Flask, request, make_response, jsonify
 from flask_restful import Api, Resource
 import os
 from flask_cors import CORS
@@ -27,8 +27,8 @@ def index():
 
 @app.route('/restaurants')
 def get_restaurants():
-    restaurant = Restaurant.query.all()
-    restaurant_list = [rests.to_dict() for rests in restaurant]
+    restaurants = Restaurant.query.all()
+    restaurant_list = [{key: value for key, value in restaurant.to_dict().items() if key!= 'restaurant_pizzas'} for restaurant in restaurants]
     return make_response(jsonify(restaurant_list), 200)
 
 @app.route('/restaurants/<int:id>', methods = ['GET', 'DELETE'])
@@ -51,7 +51,7 @@ def restaurants_by_id(id):
 @app.route('/pizzas', methods=['GET'])
 def get_pizzas():
     pizzas = Pizza.query.all()
-    pizzas_list = [pizza.to_dict() for pizza in pizzas]
+    pizzas_list = [{key:value for key, value in pizza.to_dict().items() if key!= 'restaurant_pizzas'} for pizza in pizzas]
     return make_response(jsonify(pizzas_list), 200)
 
 @app.route('/restaurant_pizzas', methods=['POST'])
@@ -68,9 +68,8 @@ def postpizzas():
         db.session.commit()
 
         return make_response(jsonify(new_data.to_dict()), 201)
-    except Exception as error:
-        db.session.rollback()
-        abort(400, errors=['validation errors'])
+    except Exception as e:
+        return make_response(jsonify({'errors':['validation errors']}), 400)
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
